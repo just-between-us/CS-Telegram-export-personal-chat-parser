@@ -1,5 +1,7 @@
-﻿using TelegramResultParser.Models;
+﻿using Spectre.Console;
+using TelegramResultParser.Models;
 using TelegramResultParser.Services;
+using TelegramResultParser.Utils;
 
 namespace TelegramResultParser;
 
@@ -20,7 +22,17 @@ class Program
         {
             Console.WriteLine("❌ Не найдено JSON файлов в папке 'exports'");
             Console.WriteLine("Поместите экспорт Telegram в папку exports/");
-            return;
+            Console.WriteLine("Или ведите путь к JSON файлу экспорта: `C:\\Users\\admin\\Desktop\\экспорты\\result.json` ");
+            var filePath = Console.ReadLine()?.Trim('"') ?? throw new InvalidOperationException();
+        
+            if (string.IsNullOrEmpty(filePath)) 
+            { 
+                Console.WriteLine("Путь не указан.");
+            }
+            else
+            {
+                jsonFiles = PathHelper.ResolveJsonPath(filePath);
+            }
         }
         
         Console.WriteLine($"Найдено файлов: {jsonFiles.Length}");
@@ -78,7 +90,7 @@ class Program
                     {
                         allExamples.AddRange(examples);
                         
-                        string chatSafeName = MakeSafeFileName(chat.Name, chat.Id);
+                        string chatSafeName = PathHelper.MakeSafeFileName(chat.Name, chat.Id);
                         string outputPath = Path.Combine("output", "chats", 
                             $"{chatSafeName}_{DateTime.Now:yyyyMMdd_HHmm}");
                         
@@ -124,7 +136,7 @@ class Program
             }
             
             Console.WriteLine();
-            Console.WriteLine($"📁 Данные сохранены в: {Path.GetFullPath("output")}");
+            AnsiConsole.MarkupLine($"[green]📁 Данные сохранены в: {Path.GetFullPath("output")}[/]");
             Console.WriteLine($"📄 Основной файл: {Path.GetFileName(finalOutput)}.jsonl");
             
             Console.WriteLine();
@@ -132,13 +144,13 @@ class Program
             
             if (allExamples.Count < 500)
             {
-                Console.WriteLine("⚠️  Мало примеров! Добавьте больше экспортов Telegram.");
+                AnsiConsole.MarkupLine("[yellow]⚠️  Мало примеров! Добавьте больше экспортов Telegram.[/]");
             }
         }
         else
         {
             Console.WriteLine();
-            Console.WriteLine("❌ Не удалось сгенерировать ни одного примера.");
+            AnsiConsole.MarkupLine("[red]❌ Не удалось сгенерировать ни одного примера.[/]");
             Console.WriteLine("Возможные причины:");
             Console.WriteLine("1. В экспорте нет личных диалогов");
             Console.WriteLine("2. Диалоги слишком короткие");
@@ -148,23 +160,5 @@ class Program
         Console.WriteLine();
         Console.WriteLine("Нажмите любую клавишу для выхода...");
         Console.ReadKey();
-    }
-    
-    static string MakeSafeFileName(string name, long chatId = 0)
-    {
-        if (string.IsNullOrWhiteSpace(name))
-            return $"chat_{chatId}";
-
-        var invalidChars = Path.GetInvalidFileNameChars();
-          var safeName = new string(name
-            .Where(ch => !invalidChars.Contains(ch))
-            .ToArray())
-            .Replace(" ", "_")
-            .Trim();
-
-        if (string.IsNullOrWhiteSpace(safeName))
-            return "Empty_Name_Chat";
-        
-        return safeName;
     }
 }

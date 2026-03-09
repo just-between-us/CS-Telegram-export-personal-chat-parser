@@ -6,8 +6,8 @@ namespace TelegramResultParser.Models
     public class TelegramMessage
     {
         
-        private const string MY_USER_ID = "";// USER_ID - измени на свой! (только цифры)
-        private const string MY_NAME = ""; // можно добавить другие варианты имени (ник без собачки)
+        private const string MY_USER_ID = "1079570654";// USER_ID - измени на свой! (только цифры)
+        private const string MY_NAME = "Bodya"; // можно добавить другие варианты имени (ник без собачки)
         
         [JsonPropertyName("id")]
         public long Id { get; set; }

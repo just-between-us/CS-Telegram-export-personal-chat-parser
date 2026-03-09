@@ -18,4 +18,21 @@ public class PathHelper
         }
         return Array.Empty<string>();
     }
+    public static string MakeSafeFileName(string name, long chatId = 0)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            return $"chat_{chatId}";
+
+        var invalidChars = Path.GetInvalidFileNameChars();
+        var safeName = new string(name
+                .Where(ch => !invalidChars.Contains(ch))
+                .ToArray())
+            .Replace(" ", "_")
+            .Trim();
+
+        if (string.IsNullOrWhiteSpace(safeName))
+            return "Empty_Name_Chat";
+        
+        return safeName;
+    }
 }
