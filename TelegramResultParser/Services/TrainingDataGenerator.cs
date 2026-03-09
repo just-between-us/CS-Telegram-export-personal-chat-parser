@@ -5,7 +5,7 @@ namespace TelegramResultParser.Services
 {
     public class TrainingDataGenerator(ILogger<TrainingDataGenerator>? logger = null)
     {
-        public List<TrainingExample> GenerateExamples(TelegramExport export, int minMessages = 2)
+        public List<TrainingExample> GenerateExamples(ChatTelegramExport export, int minMessages = 2)
         {
             var examples = new List<TrainingExample>();
             var validMessages = export.GetValidMessages();
@@ -59,7 +59,7 @@ namespace TelegramResultParser.Services
             return string.Join("\n", contextMessages);
         }
         
-        public List<TrainingExample> GenerateFromMultipleExports(List<TelegramExport> exports, int minExamplesPerChat = 10)
+        public List<TrainingExample> GenerateFromMultipleExports(List<ChatTelegramExport> exports, int minExamplesPerChat = 10)
         {
             var allExamples = new List<TrainingExample>();
             

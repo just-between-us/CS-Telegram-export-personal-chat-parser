@@ -20,14 +20,15 @@ class Program
         
         if (jsonFiles.Length == 0)
         {
-            Console.WriteLine("❌ Не найдено JSON файлов в папке 'exports'");
+            AnsiConsole.MarkupLine("[yellow]⚠️ Не найдено JSON файлов в папке 'exports'[/]");
             Console.WriteLine("Поместите экспорт Telegram в папку exports/");
-            Console.WriteLine("Или ведите путь к JSON файлу экспорта: `C:\\Users\\admin\\Desktop\\экспорты\\result.json` ");
+            Console.WriteLine(@"Или ведите путь к JSON файлу экспорта, например: `C:\Users\admin\Desktop\экспорты\result.json` или `C:\Users\admin\Desktop\result.json`...");
             var filePath = Console.ReadLine()?.Trim('"') ?? throw new InvalidOperationException();
         
             if (string.IsNullOrEmpty(filePath)) 
             { 
                 Console.WriteLine("Путь не указан.");
+                return;
             }
             else
             {
@@ -76,7 +77,7 @@ class Program
                         continue;
                     }
                     
-                    var tempExport = new TelegramExport
+                    var tempExport = new ChatTelegramExport
                     {
                         ChatName = chat.Name,
                         ChatType = chat.Type,

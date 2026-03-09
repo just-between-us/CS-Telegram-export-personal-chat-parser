@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace TelegramResultParser.Models
 {
-    public class TelegramExport
+    public class ChatTelegramExport
     {
         [JsonPropertyName("name")]
         public string ChatName { get; set; } = string.Empty;
