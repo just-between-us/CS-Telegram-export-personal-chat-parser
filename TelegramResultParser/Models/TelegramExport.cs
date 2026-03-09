@@ -44,5 +44,8 @@ namespace TelegramResultParser.Models
         
         [JsonIgnore]
         public int OtherMessagesCount => Messages?.Count(m => !m.IsFromMe) ?? 0;
+        
+        public List<TelegramMessage> GetValidMessages() => 
+            Messages?.Where(m => m.IsValid).ToList() ?? new List<TelegramMessage>();
     }
 }

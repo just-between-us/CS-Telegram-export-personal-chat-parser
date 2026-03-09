@@ -5,11 +5,13 @@ namespace TelegramResultParser.Services
 {
     public class TrainingDataGenerator(ILogger<TrainingDataGenerator>? logger = null)
     {
-        public List<TrainingExample> GenerateExamples(TelegramExport export, int minMessages = 2)
+        public List<TrainingExample> GenerateExamples( TelegramExportNewFormat export, int minMessages = 2)
         {
             var examples = new List<TrainingExample>();
-            var validMessages = export.GetValidMessages();
-            
+            var validMessages = new List<TelegramMessage>();
+            var test = export.GetAllChats();
+            validMessages.AddRange(test.SelectMany(chat => chat.GetValidMessages()));
+
             var messagesWithText = validMessages
                 .Where(m => !string.IsNullOrWhiteSpace(m.FullText))
                 .ToList();
@@ -29,7 +31,7 @@ namespace TelegramResultParser.Services
                         Output = next.FullText,
                         Context = GetContext(messagesWithText, i, 5),
                         Timestamp = current.Date,
-                        ChatName = export.ChatName
+                        ChatName = current.From
                     };
                     
                     if (example.IsValid)
@@ -59,30 +61,33 @@ namespace TelegramResultParser.Services
             return string.Join("\n", contextMessages);
         }
         
-        public List<TrainingExample> GenerateFromMultipleExports(List<TelegramExport> exports, int minExamplesPerChat = 10)
+        public List<TrainingExample> GenerateFromMultipleExports(List<TelegramExportNewFormat> exports, int minExamplesPerChat = 10)
         {
             var allExamples = new List<TrainingExample>();
-            
+               
             logger?.LogInformation("Генерация примеров из {Count} экспортов", exports.Count);
-            
             foreach (var export in exports)
             {
-                var examples = GenerateExamples(export);
-                if (examples.Count >= minExamplesPerChat)
+                var chats = export.GetAllChats();
+                
+                foreach (var chat in chats)
                 {
-                    allExamples.AddRange(examples);
-                    logger?.LogInformation("Чат '{ChatName}': добавлено {Examples} примеров", 
-                        export.ChatName, examples.Count);
+                    var examples = GenerateExamples(export);
+                    if (examples.Count >= minExamplesPerChat)
+                    {
+                        allExamples.AddRange(examples);
+                        logger?.LogInformation("Чат '{Name}': добавлено {Examples} примеров", 
+                         chat.Name, examples.Count);
+                    }
+                    else
+                    {
+                        logger?.LogWarning("Чат '{Name}': пропущен (мало примеров: {Examples})", 
+                            chat.Name, examples.Count);
+                    }
                 }
-                else
-                {
-                    logger?.LogWarning("Чат '{ChatName}': пропущен (мало примеров: {Examples})", 
-                        export.ChatName, examples.Count);
-                }
-            }
             
-            logger?.LogInformation("Итого сгенерировано {TotalExamples} примеров", allExamples.Count);
-
+                logger?.LogInformation("Итого сгенерировано {TotalExamples} примеров", allExamples.Count);
+            }
             return allExamples;
         }
         
