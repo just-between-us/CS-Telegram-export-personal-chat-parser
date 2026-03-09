@@ -5,19 +5,17 @@ namespace TelegramResultParser.Services
 {
     public class TrainingDataGenerator(ILogger<TrainingDataGenerator>? logger = null)
     {
-        public List<TrainingExample> GenerateExamples( TelegramExportNewFormat export, int minMessages = 2)
+        public List<TrainingExample> GenerateExamplesFromChat(TelegramChat chat, int minMessages = 2)
         {
             var examples = new List<TrainingExample>();
-            var validMessages = new List<TelegramMessage>();
-            var test = export.GetAllChats();
-            validMessages.AddRange(test.SelectMany(chat => chat.GetValidMessages()));
-
+            var validMessages = chat.GetValidMessages();
+            
             var messagesWithText = validMessages
                 .Where(m => !string.IsNullOrWhiteSpace(m.FullText))
                 .ToList();
             
             Console.WriteLine($"TDG: Сообщений с текстом: {messagesWithText.Count}");
-            
+
             for (int i = 0; i < messagesWithText.Count - 1; i++)
             {
                 var current = messagesWithText[i];
@@ -31,7 +29,7 @@ namespace TelegramResultParser.Services
                         Output = next.FullText,
                         Context = GetContext(messagesWithText, i, 5),
                         Timestamp = current.Date,
-                        ChatName = current.From
+                        ChatName = chat.Name
                     };
                     
                     if (example.IsValid)
@@ -72,7 +70,7 @@ namespace TelegramResultParser.Services
                 
                 foreach (var chat in chats)
                 {
-                    var examples = GenerateExamples(export);
+                    var examples = GenerateExamplesFromChat(chat);
                     if (examples.Count >= minExamplesPerChat)
                     {
                         allExamples.AddRange(examples);

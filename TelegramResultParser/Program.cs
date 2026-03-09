@@ -75,8 +75,14 @@ class Program
                             Console.WriteLine("   ⚠️ Слишком мало сообщений, пропускаем");
                             continue;
                         }
+                        var tempChat = new TelegramChat
+                        {
+                            Name = chat.Name,
+                            Type = chat.Type,
+                            Messages = chat.Messages
+                        };
 
-                        var examples = generator.GenerateExamples(export);
+                        var examples = generator.GenerateExamplesFromChat(tempChat);
                         Console.WriteLine($"🤖 Сгенерировано примеров: {examples.Count}");
 
                         if (examples.Count > 0)
